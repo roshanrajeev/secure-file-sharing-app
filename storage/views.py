@@ -7,7 +7,7 @@ from api.errors import ApiErrorsMixin
 from api.mixins import ApiAuthMixin
 from .models import Folder, File
 from rest_framework.parsers import FormParser, MultiPartParser
-from .services import create_file, create_folder
+from .services import create_file, create_folder, bulk_create_files
 from django.http import Http404
 from django.core.files.storage import default_storage
 from django.http import FileResponse
@@ -23,6 +23,18 @@ class FileUploadView(ApiErrorsMixin, ApiAuthMixin, APIView):
         serializer = self.InputSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         create_file(folder_uid=folder_uid, **serializer.validated_data)
+        return Response(status=status.HTTP_200_OK)
+
+class BulkFileUploadView(ApiErrorsMixin, ApiAuthMixin, APIView):
+    parser_classes = [FormParser, MultiPartParser]
+
+    class InputSerializer(serializers.Serializer):
+        files = serializers.ListField(child=serializers.FileField(), required=True)
+
+    def post(self, request, folder_uid):
+        serializer = self.InputSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        bulk_create_files(folder_uid=folder_uid, **serializer.validated_data)
         return Response(status=status.HTTP_200_OK)
 
 class FolderCreateView(ApiErrorsMixin, ApiAuthMixin, APIView):

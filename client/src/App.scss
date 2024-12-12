@@ -1,0 +1,35 @@
+html {
+    font-size: 10px;
+}
+
+.layout {
+    min-height: 100vh;
+}
+
+.logo {
+    float: left;
+    width: 120px;
+    height: 31px;
+    margin: 16px 24px 16px 0;
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.site-layout-content {
+    min-height: 280px;
+    padding: 24px;
+    background: #fff;
+    border-radius: 2px;
+}
+
+.ant-layout-header {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    width: 100%;
+}
+
+.ShareFiles {
+    max-width: 50rem;
+    margin: 0 auto;
+}
+
