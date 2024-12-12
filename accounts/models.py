@@ -5,13 +5,19 @@ from django.core.exceptions import ValidationError
 
 # Create your models here.
 class Account(AbstractBaseUser, PermissionsMixin):
-    username = None
+    ROLE_CHOICES = (
+        ("admin", "Admin"),
+        ("user", "User"),
+        ("guest", "Guest"),
+    )
 
-    email = models.EmailField(max_length=254, unique=True, blank=False)
+    username   = None
+    email      = models.EmailField(max_length=254, unique=True, blank=False)
     first_name = models.CharField(max_length=36, blank=False)
-    last_name = models.CharField(max_length=36, blank=False)
-    is_staff = models.BooleanField(default=False)
-    is_active = models.BooleanField(default=True)
+    last_name  = models.CharField(max_length=36, blank=False)
+    is_staff   = models.BooleanField(default=False)
+    is_active  = models.BooleanField(default=True)
+    role       = models.CharField(max_length=10, choices=ROLE_CHOICES, default="user")
 
     objects = AccountManager()
 

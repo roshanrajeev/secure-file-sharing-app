@@ -15,6 +15,7 @@ class AccountCreateView(ApiErrorsMixin, APIView):
         first_name = serializers.CharField(required=True)
         last_name = serializers.CharField(required=True)
         password = serializers.CharField(required=True)
+        role = serializers.ChoiceField(choices=Account.ROLE_CHOICES, required=False)
 
     def post(self, request):
         serializer = self.InputSerializer(data=request.data)
@@ -26,7 +27,7 @@ class AccountListView(ApiErrorsMixin, ApiAuthMixin, APIView):
     class OutputSerializer(serializers.ModelSerializer):
         class Meta:
             model = Account
-            fields = ("id", "email", "first_name", "last_name")
+            fields = ("id", "email", "first_name", "last_name", "role")
 
     def get(self, request):
         # accounts = accounts_list(filters=filter_seriaizer.validated_data)
