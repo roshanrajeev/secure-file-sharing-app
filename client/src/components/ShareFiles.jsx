@@ -52,7 +52,7 @@ const ShareFiles = () => {
             if (response.ok) {
                 message.success("Files uploaded successfully!");
                 setFileList([]);
-                setSharableLink(`localhost:3000/api/v1/storage/folders/${folderId}`);
+                setSharableLink(`localhost:3000/shared/${folderId}`);
             } else {
                 message.error("File upload failed.");
             }

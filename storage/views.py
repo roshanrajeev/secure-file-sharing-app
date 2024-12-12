@@ -72,7 +72,9 @@ class FolderDownloadView(ApiErrorsMixin, ApiAuthMixin, APIView):
             # Return a single file directly
             file_obj = files[0].file
             file_path = default_storage.path(file_obj.name)
-            return FileResponse(open(file_path, "rb"), as_attachment=True, filename=file_obj.name.split("/")[-1])
+            response = FileResponse(open(file_path, "rb"), as_attachment=True, filename=file_obj.name.split("/")[-1])   
+            response["Access-Control-Expose-Headers"] = "Content-Disposition"
+            return response
         
         elif len(files) > 1:
             # Generate a zip archive
@@ -86,6 +88,8 @@ class FolderDownloadView(ApiErrorsMixin, ApiAuthMixin, APIView):
                     zip_file.write(file_path, arcname=file_obj.file.name.split("/")[-1])
             zip_buffer.seek(0)
 
-            return FileResponse(zip_buffer, as_attachment=True, filename=f"{folder_uid}_files.zip")
+            response = FileResponse(zip_buffer, as_attachment=True, filename=f"{folder_uid}_files.zip")
+            response["Access-Control-Expose-Headers"] = "Content-Disposition"
+            return response
 
         raise Http404("No files found in the folder.")
