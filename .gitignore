@@ -20,3 +20,5 @@ env/
 zappa_settings.json
 APIKey.json
 migration_script.py
+files/
+media/

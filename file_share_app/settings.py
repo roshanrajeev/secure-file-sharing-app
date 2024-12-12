@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'api',
     'accounts',
+    'storage',
 ]
 
 MIDDLEWARE = [
@@ -145,3 +146,6 @@ SIMPLE_JWT = {
     'SLIDING_TOKEN_LIFETIME_LATE_USER': timedelta(days=30),
     "AUTH_HEADER_TYPES": "Bearer"
 }
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
