@@ -21,7 +21,9 @@ axiosInstance.interceptors.response.use(
                 await axios.post(`${API_BASE_URL}/auth/token/refresh`, {}, { withCredentials: true });
                 return axiosInstance(originalRequest);
             } catch (error) {
-                window.location.href = '/login';
+                if(window.location.pathname !== '/') {
+                    window.location.href = '/login';
+                }
                 return Promise.reject(error);
             }
         }

@@ -25,7 +25,7 @@ const PrivateRoute = () => {
 
     if (isLoading) {
         return (
-            <div className="flex justify-center items-center">
+            <div className="fixed inset-0 flex justify-center items-center bg-white z-50">
                 <Spin size="large" tip="Loading..." spinning={true}>
                     <div className="p-12" />
                 </Spin>
