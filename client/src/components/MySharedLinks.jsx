@@ -1,11 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Card, Col, Row, Typography, Popover } from 'antd';
+import { Button, Card, Col, Row, Typography, Popover, Avatar, Tag } from 'antd';
 import moment from 'moment';
-import { DownloadOutlined, LinkOutlined, InfoCircleOutlined } from '@ant-design/icons';
+import { DownloadOutlined, LinkOutlined, InfoCircleOutlined, UserOutlined, GlobalOutlined } from '@ant-design/icons';
 import { useAuth } from '../hooks/useAuth';
 import SharedLinkDetailsModal from './Modals/SharedLinkDetailsModal';
 
 const { Title, Text } = Typography;
+
+const dummyUsers = [
+    { first_name: 'John', last_name: 'Doe', email: 'john.doe@example.com', avatar: null },
+    { first_name: 'Jane', last_name: 'Smith', email: 'jane.smith@example.com', avatar: null },
+    { first_name: 'Mike', last_name: 'Johnson', email: 'mike.j@example.com', avatar: null },
+    { first_name: 'Sarah', last_name: 'Wilson', email: 'sarah.w@example.com', avatar: null },
+    { first_name: 'Alex', last_name: 'Brown', email: 'alex.b@example.com', avatar: null }
+];
 
 const MySharedLinks = () => {
     const [links, setLinks] = useState([]);
@@ -63,6 +71,55 @@ const MySharedLinks = () => {
         setIsModalVisible(true);
     };
 
+    const getRandomUsers = () => {
+        const numUsers = Math.floor(Math.random() * 3) + 2; // Random number between 2 and 4
+        const shuffled = [...dummyUsers].sort(() => 0.5 - Math.random());
+        return shuffled.slice(0, numUsers);
+    };
+
+    const renderSharedWith = (link) => {
+        if (link.share_with_all) {
+            return (
+                <div className="mb-2">
+                    <Text className="text-sm text-gray-500">Sharing:</Text>
+                    <div className="mt-1 flex items-center">
+                        <Tag icon={<GlobalOutlined />} color="blue">
+                            Anyone with link
+                        </Tag>
+                    </div>
+                </div>
+            );
+        }
+
+        const sharedUsers = link.shared_with || getRandomUsers();
+        return (
+            <div className="mb-2">
+                <Text className="text-sm text-gray-500">Shared with:</Text>
+                <div className="mt-1">
+                    <Avatar.Group
+                        maxCount={3}
+                        maxStyle={{ color: '#f56a00', backgroundColor: '#fde3cf' }}
+                    >
+                        {sharedUsers.map((user, index) => (
+                            <Popover
+                                key={index}
+                                content={
+                                    <div>
+                                        <p>{`${user.first_name} ${user.last_name}`}</p>
+                                        <p className="text-gray-500">{user.email}</p>
+                                    </div>
+                                }
+                                trigger="hover"
+                            >
+                                <Avatar icon={<UserOutlined />} />
+                            </Popover>
+                        ))}
+                    </Avatar.Group>
+                </div>
+            </div>
+        );
+    };
+
     return (
         <div className="mb-12">
             <Title level={2}>My Shared Links</Title>
@@ -93,15 +150,7 @@ const MySharedLinks = () => {
                                 title={link.file_name}
                                 description={
                                     <>
-                                        <Popover
-                                            content={link.shared_with?.email}
-                                            trigger="hover"
-                                        >
-                                            <Text className="cursor-pointer">
-                                                Shared with: {link.shared_with?.first_name} {link.shared_with?.last_name}
-                                            </Text>
-                                        </Popover>
-                                        <br />
+                                        {renderSharedWith(link)}
                                         <Text type="secondary">
                                             {moment(link.created_at).fromNow()}
                                         </Text>

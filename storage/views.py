@@ -124,9 +124,16 @@ class FolderSharedWithMeView(ApiErrorsMixin, ApiAuthMixin, APIView):
 
 class MySharedFoldersView(ApiErrorsMixin, ApiAuthMixin, APIView):
     class OutputSerializer(serializers.ModelSerializer):
+        class AccountSerializer(serializers.ModelSerializer):
+            class Meta:
+                model = Account
+                fields = ["id", "first_name", "last_name", "email"]
+
+        shared_with = AccountSerializer(read_only=True, many=True)
+
         class Meta:
             model = Folder
-            fields = ["uid", "created_at", "user"]
+            fields = ["uid", "created_at", "shared_with", "share_with_all"]
 
     def get(self, request):
         folders = request.user.folders.all()
