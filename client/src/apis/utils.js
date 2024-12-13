@@ -3,5 +3,4 @@ const getToken = () => {
 }
 
 export const getHeaders = () => ({
-    "Authorization": `Bearer ${getToken()}`
 })

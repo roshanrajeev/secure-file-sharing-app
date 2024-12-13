@@ -8,6 +8,8 @@ from api.errors import ApiErrorsMixin
 from api.mixins import ApiAuthMixin
 from .models import Account
 from rest_framework.validators import UniqueValidator
+from rest_framework_simplejwt.views import TokenObtainPairView
+
 # Create your views here.
 class AccountCreateView(ApiErrorsMixin, APIView):
     class InputSerializer(serializers.Serializer):
@@ -23,6 +25,7 @@ class AccountCreateView(ApiErrorsMixin, APIView):
         user = account_create(**serializer.validated_data)
         return Response(status=status.HTTP_201_CREATED)
 
+
 class AccountListView(ApiErrorsMixin, ApiAuthMixin, APIView):
     class OutputSerializer(serializers.ModelSerializer):
         class Meta:
@@ -35,3 +38,11 @@ class AccountListView(ApiErrorsMixin, ApiAuthMixin, APIView):
 
         data = self.OutputSerializer(instance=accounts, many=True).data
         return Response(data=data)
+
+
+class CookieTokenObtainPairView(TokenObtainPairView):
+    def finalize_response(self, request, response, *args, **kwargs):
+        response = super().finalize_response(request, response, *args, **kwargs)
+        response.set_cookie("access_token", response.data["access"], httponly=True, samesite="None", secure=True, max_age=3600 * 24 * 14)
+        response.set_cookie("refresh_token", response.data["refresh"], httponly=True, samesite="None", secure=True, max_age=3600 * 24 * 14)
+        return response
