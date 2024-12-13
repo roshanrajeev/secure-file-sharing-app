@@ -8,6 +8,10 @@ class Folder(models.Model):
     user = models.ForeignKey(Account, on_delete=models.CASCADE, related_name="folders", null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    share_with_all = models.BooleanField(default=True)
+    shared_with = models.ManyToManyField(
+        Account, related_name="folders_shared_with_me", blank=True
+    )
 
 
 class File(models.Model):

@@ -40,13 +40,19 @@ class BulkFileUploadView(ApiErrorsMixin, APIView):
 
 
 class FolderCreateView(ApiErrorsMixin, APIView):
+    class InputSerializer(serializers.Serializer):
+        share_with_all = serializers.BooleanField(required=False)
+        allowed_emails = serializers.ListField(child=serializers.EmailField(), required=False)
+
     class OutputSerializer(serializers.ModelSerializer):
         class Meta:
             model = Folder
             fields = ["uid"]
 
     def post(self, request):
-        folder = create_folder(user=request.user)
+        serializer = self.InputSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        folder = create_folder(user=request.user, **serializer.validated_data)
         data = self.OutputSerializer(instance=folder).data
         return Response(data, status=status.HTTP_201_CREATED)
 

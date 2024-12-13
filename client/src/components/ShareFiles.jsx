@@ -44,7 +44,7 @@ const ShareFiles = () => {
         });
 
         try {
-            const folderResponse = await createFolder();
+            const folderResponse = await createFolder({ shareWithAll, allowedEmails });
             if (!folderResponse.ok) {
                 message.error("Failed to create folder.");
                 return;
