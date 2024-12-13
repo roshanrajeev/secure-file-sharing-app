@@ -1,8 +1,5 @@
-import { getHeaders } from "../utils";
+import { axiosInstance } from "../axios";
 
 export const filesList = async (folderUid) => {
-    return await fetch(`http://localhost:8000/api/v1/storage/folders/${folderUid}/files`, {
-        credentials: "include",
-        headers: getHeaders()
-    });
+    return await axiosInstance.get(`/storage/folders/${folderUid}/files`);
 }

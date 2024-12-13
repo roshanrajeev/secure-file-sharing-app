@@ -12,6 +12,8 @@ from django.http import Http404
 from django.core.files.storage import default_storage
 from django.http import FileResponse
 from accounts.models import Account
+import zipfile
+from io import BytesIO
 
 # Create your views here.
 class FileUploadView(ApiErrorsMixin, ApiAuthMixin, APIView):
@@ -58,25 +60,31 @@ class FolderCreateView(ApiErrorsMixin, APIView):
         return Response(data, status=status.HTTP_201_CREATED)
 
 
-class FileListView(ApiErrorsMixin, ApiAuthMixin, APIView):
+class FileListView(ApiErrorsMixin, APIView):
     class OutputSerializer(serializers.ModelSerializer):
         class Meta:
             model = File
             fields = ["uid", "name", "created_at"]
 
     def get(self, request, folder_uid):
-        files = File.objects.filter(folder__uid=folder_uid)
+        folder = Folder.objects.get(uid=folder_uid)
+        if not folder.share_with_all and request.user not in folder.shared_with.all() and request.user != folder.user:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+        files = folder.files.all()
         data = self.OutputSerializer(instance=files, many=True).data
         return Response(data, status=status.HTTP_200_OK)
 
 
-class FolderDownloadView(ApiErrorsMixin, ApiAuthMixin, APIView):
+class FolderDownloadView(ApiErrorsMixin, APIView):
     def get(self, request, folder_uid):
         folder = Folder.objects.get(uid=folder_uid)
+        if not folder.share_with_all and request.user not in folder.shared_with.all() and request.user != folder.user:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
         files = folder.files.all()
 
         if len(files) == 1:
-            # Return a single file directly
             file_obj = files[0].file
             file_path = default_storage.path(file_obj.name)
             response = FileResponse(open(file_path, "rb"), as_attachment=True, filename=file_obj.name.split("/")[-1])   
@@ -84,10 +92,6 @@ class FolderDownloadView(ApiErrorsMixin, ApiAuthMixin, APIView):
             return response
         
         elif len(files) > 1:
-            # Generate a zip archive
-            import zipfile
-            from io import BytesIO
-
             zip_buffer = BytesIO()
             with zipfile.ZipFile(zip_buffer, "w") as zip_file:
                 for file_obj in files:

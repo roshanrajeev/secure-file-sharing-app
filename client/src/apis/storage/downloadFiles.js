@@ -1,9 +1,7 @@
-import { getHeaders } from "../utils";
+import { axiosInstance } from "../axios";
 
 export const downloadFiles = async (folder_uid) => {
-    const response = await fetch(`http://localhost:8000/api/v1/storage/folders/${folder_uid}/files/download`, {
-        headers: getHeaders(),
-        credentials: "include"
+    return await axiosInstance.get(`/storage/folders/${folder_uid}/files/download`, {
+        responseType: "blob",
     });
-    return response;
 }

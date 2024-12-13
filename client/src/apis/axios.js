@@ -1,4 +1,6 @@
 import axios from "axios";
+import { routes } from "../constants/routes";
+import { match } from 'path-to-regexp';
 
 const API_BASE_URL = "http://localhost:8000/api/v1";
 
@@ -21,8 +23,15 @@ axiosInstance.interceptors.response.use(
                 await axios.post(`${API_BASE_URL}/auth/token/refresh`, {}, { withCredentials: true });
                 return axiosInstance(originalRequest);
             } catch (error) {
-                if(window.location.pathname !== '/') {
-                    window.location.href = '/login';
+                const routesWithUnauthorizedAccess = [routes.HOME_PATH, routes.SHARED_FILES_PATH];
+
+                const isUnauthorizedAccessAllowed = routesWithUnauthorizedAccess.some(route => {
+                    const matcher = match(route, { decode: decodeURIComponent });
+                    return matcher(window.location.pathname);
+                });
+
+                if (!isUnauthorizedAccessAllowed) {
+                    window.location.href = routes.LOGIN_PATH;
                 }
                 return Promise.reject(error);
             }

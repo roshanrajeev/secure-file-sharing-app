@@ -2,28 +2,36 @@ import React, { useEffect, useState } from "react";
 import { Button, Card, Typography } from "antd";
 import { message } from "antd";
 import { DownloadOutlined } from "@ant-design/icons";
-import { useParams } from "react-router";
+import { useNavigate, useParams } from "react-router";
 import { filesList } from "../apis/storage/filesList";
 import { downloadFiles } from "../apis/storage/downloadFiles";
+import { useAuth } from "../hooks/useAuth";
+import { routes } from "../constants/routes";
 
 const DownloadFiles = () => {
     const [fileList, setFileList] = useState([]);
+    const { isAuthenticated } = useAuth()
 
+    const navigate = useNavigate()
     const params = useParams();
 
     useEffect(() => {
         const asyncFetch = async () => {
             try {
-                const response = await filesList(params.folder_uid);
-                if (response.ok) {
-                    const data = await response.json();
-                    setFileList(data);
+                const { data } = await filesList(params.folder_uid);
+                setFileList(data);
+            } catch (error) {
+                if (error.response.status === 403) {
+                    if(isAuthenticated) {
+                        message.error("You are not authorized to access.");
+                        navigate(routes.HOME_PATH)
+                    } else {
+                        message.error("Please login to access.")
+                        navigate(routes.LOGIN_PATH)
+                    }
                 } else {
                     message.error("Failed to fetch files.");
                 }
-            } catch (error) {
-                console.error("Error fetching files:", error);
-                message.error("Failed to fetch files.");
             }
         }
         asyncFetch();
@@ -32,30 +40,25 @@ const DownloadFiles = () => {
     const handleDownload = async () => {
         try {
             const response = await downloadFiles(params.folder_uid);
-            if (response.ok) {
-                let filename = "download";
+            
+            let filename = "download";
 
-                const contentDisposition = response.headers.get("Content-Disposition");
-                console.log({ headers: response.headers });
-                if (contentDisposition && contentDisposition.includes("filename=")) {
-                    const filenameMatch = contentDisposition.match(/filename="(.+)"/);
-                    console.log(filenameMatch[1]);
-                    if (filenameMatch && filenameMatch[1]) {
-                        filename = filenameMatch[1];
-                    }
+            const contentDisposition = response.headers.get("Content-Disposition");
+            console.log({ headers: response.headers });
+            if (contentDisposition && contentDisposition.includes("filename=")) {
+                const filenameMatch = contentDisposition.match(/filename="(.+)"/);
+                console.log(filenameMatch[1]);
+                if (filenameMatch && filenameMatch[1]) {
+                    filename = filenameMatch[1];
                 }
-
-                const data = await response.blob();
-                const url = URL.createObjectURL(data);
-
-                const a = document.createElement("a");
-                a.href = url;
-                a.download = filename;
-                a.click();
-                window.URL.revokeObjectURL(url);
-            } else {
-                message.error("Failed to download files.");
             }
+
+            const url = URL.createObjectURL(response.data);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = filename;
+            a.click();
+            window.URL.revokeObjectURL(url);
         } catch (error) {
             console.error("Error downloading files:", error);
             message.error("Failed to download files.");
