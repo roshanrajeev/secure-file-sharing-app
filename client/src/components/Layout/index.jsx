@@ -1,35 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Layout as AntLayout, Menu } from 'antd';
 import { ShareAltOutlined, LoginOutlined } from '@ant-design/icons';
-import { Outlet } from 'react-router';
-
-const MenuItems = [
-    {
-        key: '1',
-        icon: <ShareAltOutlined />,
-        label: 'Share Files',
-    },
-    {
-        key: '2',
-        icon: <LoginOutlined />,
-        label: 'Login',
-    },
-]
+import { Outlet, useNavigate } from 'react-router';
+import Header from './Header';
 
 const Layout = () => {
-    const { Header, Footer, Content } = AntLayout;
+    const { Footer, Content } = AntLayout;
 
     return (
         <AntLayout className="layout">
-            <Header>
-                <div className="logo" />
-                <Menu
-                    theme="dark"
-                    mode="horizontal"
-                    defaultSelectedKeys={['1']}
-                    items={MenuItems}
-                />
-            </Header>
+            <Header/>
             <Content style={{ padding: '50px', minHeight: 'calc(100vh - 134px)' }}>
                 <div className="site-layout-content">
                     <Outlet />
