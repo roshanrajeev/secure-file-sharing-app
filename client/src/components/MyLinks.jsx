@@ -5,6 +5,7 @@ import axios from 'axios';
 import { useAuth } from '../hooks/useAuth';
 import { foldersSharedWithMe } from '../apis/storage/foldersSharedWithMe';
 import { DownloadOutlined } from '@ant-design/icons';
+import MySharedLinks from './MySharedLinks';
 
 
 const { Title } = Typography;
@@ -99,6 +100,7 @@ const MyLinks = () => {
 
     return (
         <div style={{ padding: '24px' }}>
+            <MySharedLinks/>
             <Title level={2}>Shared with me</Title>
             <Table
                 columns={columns}

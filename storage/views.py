@@ -121,3 +121,15 @@ class FolderSharedWithMeView(ApiErrorsMixin, ApiAuthMixin, APIView):
         data = self.OutputSerializer(instance=folders, many=True).data
         return Response(data, status=status.HTTP_200_OK)
 
+
+class MySharedFoldersView(ApiErrorsMixin, ApiAuthMixin, APIView):
+    class OutputSerializer(serializers.ModelSerializer):
+        class Meta:
+            model = Folder
+            fields = ["uid", "created_at", "user"]
+
+    def get(self, request):
+        folders = request.user.folders.all()
+        data = self.OutputSerializer(instance=folders, many=True).data
+        return Response(data, status=status.HTTP_200_OK)
+
