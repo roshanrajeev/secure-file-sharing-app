@@ -55,8 +55,27 @@ class MyAccountView(ApiErrorsMixin, ApiAuthMixin, APIView):
 class CookieTokenObtainPairView(TokenObtainPairView):
     def finalize_response(self, request, response, *args, **kwargs):
         response = super().finalize_response(request, response, *args, **kwargs)
-        response.set_cookie("access_token", response.data["access"], httponly=True, samesite="None", secure=True, max_age=3600 * 24 * 14)
-        response.set_cookie("refresh_token", response.data["refresh"], httponly=True, samesite="None", secure=True, max_age=3600 * 24 * 14)
+
+        if "access" in response.data:
+            response.set_cookie(
+                "access_token",
+                response.data["access"],
+                httponly=True,
+                samesite="None",
+                secure=True,
+                max_age=3600 * 24 * 14,
+            )
+
+        if "refresh" in response.data:
+            response.set_cookie(
+                "refresh_token",
+                response.data["refresh"],
+                httponly=True,
+                samesite="None",
+                secure=True,
+                max_age=3600 * 24 * 14,
+            )
+
         return response
 
 

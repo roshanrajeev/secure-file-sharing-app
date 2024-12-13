@@ -1,6 +1,6 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import { getMyAccount } from '../apis/users/getUser';
-import { logout } from '../apis/users/logout';
+import { useNavigate } from 'react-router';
+import { usersApi } from '../apis/users';
 
 export const AuthContext = createContext(null);
 
@@ -8,18 +8,30 @@ export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
+    const navigate = useNavigate();
+
+    const setDataAndRedirect = ({user = null, authenticated = false, to = null}) => {
+        setUser(user);
+        setIsAuthenticated(authenticated);
+        if(to !== null) navigate(to);
+    }
+
+    const loginUser = (userData) => {
+        setDataAndRedirect({user: userData, authenticated: true});
+    };
+
+    const logoutUser = async () => {
+        await usersApi.logout();
+        setDataAndRedirect({ to: "/login" });
+    };
 
     useEffect(() => {
         const initializeAuth = async () => {
             try {
-                const userResponse = await getMyAccount();
-                if (userResponse.ok) {
-                    const userData = await userResponse.json();
-                    setUser(userData);
-                    setIsAuthenticated(true);
-                }
+                const { data } = await usersApi.myAccount();
+                loginUser(data);
             } catch (error) {
-                console.error('Authentication initialization failed:', error);
+                setDataAndRedirect({});
             } finally {
                 setIsLoading(false);
             }
@@ -27,17 +39,6 @@ export const AuthProvider = ({ children }) => {
 
         initializeAuth();
     }, []);
-    
-    const loginUser = (userData) => {
-        setUser(userData);
-        setIsAuthenticated(true);
-    };
-
-    const logoutUser = () => {
-        setUser(null);
-        setIsAuthenticated(false);
-        logout();
-    };
 
     return (
         <AuthContext.Provider value={{ 
