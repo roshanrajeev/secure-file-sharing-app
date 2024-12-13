@@ -8,7 +8,9 @@ from api.errors import ApiErrorsMixin
 from api.mixins import ApiAuthMixin
 from .models import Account
 from rest_framework.validators import UniqueValidator
-from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from rest_framework_simplejwt.exceptions import InvalidToken
+from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 
 # Create your views here.
 class AccountCreateView(ApiErrorsMixin, APIView):
@@ -56,25 +58,55 @@ class CookieTokenObtainPairView(TokenObtainPairView):
     def finalize_response(self, request, response, *args, **kwargs):
         response = super().finalize_response(request, response, *args, **kwargs)
 
-        if "access" in response.data:
+        if response.data.get("access"):
+            response.set_cookie(
+                "access_token",
+                response.data["access"],
+                httponly=True,
+                samesite="None",
+                secure=True
+            )
+
+        if response.data.get("refresh"):
+            response.set_cookie(
+                "refresh_token",
+                response.data["refresh"],
+                httponly=True,
+                samesite="None",
+                secure=True
+            )
+
+        return response
+
+
+
+
+class CookieTokenRefreshView(TokenRefreshView):
+    class CookieTokenRefreshSerializer(TokenRefreshSerializer):
+        refresh = None
+        def validate(self, attrs):
+
+            attrs["refresh"] = self.context["request"].COOKIES.get("refresh_token")
+            if attrs["refresh"]:
+                return super().validate(attrs)
+            else:
+                raise InvalidToken("No valid token found in cookie 'refresh_token'")
+
+
+    serializer_class = CookieTokenRefreshSerializer
+
+    def finalize_response(self, request, response, *args, **kwargs):
+        response = super().finalize_response(request, response, *args, **kwargs)
+
+        if response.data.get("access"):
             response.set_cookie(
                 "access_token",
                 response.data["access"],
                 httponly=True,
                 samesite="None",
                 secure=True,
-                max_age=3600 * 24 * 14,
             )
-
-        if "refresh" in response.data:
-            response.set_cookie(
-                "refresh_token",
-                response.data["refresh"],
-                httponly=True,
-                samesite="None",
-                secure=True,
-                max_age=3600 * 24 * 14,
-            )
+            del response.data['access']
 
         return response
 
