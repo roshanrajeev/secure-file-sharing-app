@@ -58,3 +58,11 @@ class CookieTokenObtainPairView(TokenObtainPairView):
         response.set_cookie("access_token", response.data["access"], httponly=True, samesite="None", secure=True, max_age=3600 * 24 * 14)
         response.set_cookie("refresh_token", response.data["refresh"], httponly=True, samesite="None", secure=True, max_age=3600 * 24 * 14)
         return response
+
+
+class LogoutView(APIView):
+    def post(self, request):
+        response = Response(status=status.HTTP_200_OK)
+        response.delete_cookie("access_token")
+        response.delete_cookie("refresh_token")
+        return response
