@@ -1,19 +1,28 @@
 import React from 'react';
 import Layout from "./Layout";
-import { Button, Card, Form, Input, Typography } from 'antd';
+import { Button, Card, Form, Input, message, Typography } from 'antd';
 import { login } from '../apis/users/login';
+import { getMyAccount } from '../apis/users/getUser';
+import { useAuth } from '../hooks/useAuth';
+import { useNavigate } from 'react-router';
 
 const Login = () => {
     const [form] = Form.useForm();
+    const { loginUser } = useAuth();
+    const navigate = useNavigate();
 
     const onFinish = async (values) => {
         try {
-            const response = await login(values);
-            console.log(response);
-            // if (response.ok) {
-            //     const data = await response.json();
-            //     console.log(data);
-            // }
+            await login(values);
+            const userResponse = await getMyAccount();
+            if (userResponse.ok) {
+                const user = await userResponse.json();
+                navigate('/');
+                loginUser(user);
+                message.success("Login successful!");
+            } else {
+                message.error("Login failed.");
+            }
         } catch (error) {
             console.error(error);
         }

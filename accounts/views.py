@@ -40,6 +40,18 @@ class AccountListView(ApiErrorsMixin, ApiAuthMixin, APIView):
         return Response(data=data)
 
 
+class MyAccountView(ApiErrorsMixin, ApiAuthMixin, APIView):
+    class OutputSerializer(serializers.ModelSerializer):
+        class Meta:
+            model = Account
+            fields = ("id", "email", "first_name", "last_name", "role")
+
+    def get(self, request):
+        account = Account.objects.get(id=request.user.id)
+        data = self.OutputSerializer(instance=account).data
+        return Response(data=data)
+
+
 class CookieTokenObtainPairView(TokenObtainPairView):
     def finalize_response(self, request, response, *args, **kwargs):
         response = super().finalize_response(request, response, *args, **kwargs)
