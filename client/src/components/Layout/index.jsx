@@ -1,11 +1,23 @@
 import React, { useState } from 'react';
-import { Layout as AntLayout, Menu } from 'antd';
+import { Layout as AntLayout, Menu, Spin } from 'antd';
 import { ShareAltOutlined, LoginOutlined } from '@ant-design/icons';
 import { Outlet, useNavigate } from 'react-router';
 import Header from './Header';
+import { useAuth } from '../../hooks/useAuth';
 
 const Layout = () => {
     const { Footer, Content } = AntLayout;
+    const { isLoading } = useAuth();
+
+    if (isLoading) {
+        return (
+            <div className="flex justify-center items-center min-h-screen">
+                <Spin size="large" tip="Loading..." spinning={true}>
+                    <div className="p-12" />
+                </Spin>
+            </div>
+        );
+    }
 
     return (
         <AntLayout className="layout">

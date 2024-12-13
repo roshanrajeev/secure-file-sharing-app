@@ -1,15 +1,20 @@
 import React, { useState } from "react";
-import { Button, Card, Typography } from "antd";
+import { Button, Card, Typography, Switch } from "antd";
 import Dragger from "antd/es/upload/Dragger";
 import { InboxOutlined } from "@ant-design/icons";
 import { message } from "antd";
 import { bulkUploadFiles } from "../apis/storage/bulkUploadFiles";
 import { createFolder } from "../apis/storage/createFolder";
 import { SendOutlined, CopyOutlined } from "@ant-design/icons";
+import { useAuth } from "../hooks/useAuth";
+import { Select } from "antd";
 
 const ShareFiles = () => {
     const [fileList, setFileList] = useState([]);
     const [sharableLink, setSharableLink] = useState(null);
+    const [shareWithAll, setShareWithAll] = useState(true);
+    const [allowedEmails, setAllowedEmails] = useState([]);
+    const { isAuthenticated } = useAuth();
 
     const draggerProps = {
         name: "file",
@@ -72,6 +77,23 @@ const ShareFiles = () => {
         setFileList([]);
     }
 
+    const handleShareToggle = (checked) => {
+        setShareWithAll(checked);
+        if (checked) {
+            setAllowedEmails([]);
+        }
+    };
+
+    const handleEmailsChange = (value) => {
+        setAllowedEmails(value);
+    };
+
+    const isShareButtonDisabled = () => {
+        if (fileList.length === 0) return true;
+        if (!shareWithAll && allowedEmails.length === 0) return true;
+        return false;
+    };
+
     return (
         <Card className="max-w-3xl mx-auto">
             {sharableLink ?
@@ -98,11 +120,41 @@ const ShareFiles = () => {
                             banned files.
                         </p>
                     </Dragger>
+                    {isAuthenticated && (
+                        <div className="mt-8 mb-6 space-y-4">
+                            <div className="flex items-center gap-2">
+                                <Switch
+                                    checked={shareWithAll}
+                                    onChange={handleShareToggle}
+                                    className="bg-gray-300"
+                                />
+                                <Typography.Text>Allow access to everyone</Typography.Text>
+                            </div>
+
+                            {!shareWithAll && (
+                                <div>
+                                    <div className="flex items-center gap-1 mb-1">
+                                        <Typography.Text>Share with specific users</Typography.Text>
+                                        <Typography.Text type="danger">*</Typography.Text>
+                                    </div>
+                                    <Select
+                                        mode="tags"
+                                        style={{ width: '100%' }}
+                                        placeholder="Enter email addresses"
+                                        onChange={handleEmailsChange}
+                                        tokenSeparators={[',']}
+                                        value={allowedEmails}
+                                        allowClear
+                                    />
+                                </div>
+                            )}
+                        </div>
+                    )}
                     <Button
                         type="primary"
                         className="mt-4"
                         onClick={handleUpload}
-                        disabled={fileList.length === 0}
+                        disabled={isShareButtonDisabled()}
                     >
                         <SendOutlined />
                         Send Files

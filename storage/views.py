@@ -26,7 +26,7 @@ class FileUploadView(ApiErrorsMixin, ApiAuthMixin, APIView):
         return Response(status=status.HTTP_200_OK)
 
 
-class BulkFileUploadView(ApiErrorsMixin, ApiAuthMixin, APIView):
+class BulkFileUploadView(ApiErrorsMixin, APIView):
     parser_classes = [FormParser, MultiPartParser]
 
     class InputSerializer(serializers.Serializer):
@@ -39,14 +39,14 @@ class BulkFileUploadView(ApiErrorsMixin, ApiAuthMixin, APIView):
         return Response(status=status.HTTP_200_OK)
 
 
-class FolderCreateView(ApiErrorsMixin, ApiAuthMixin, APIView):
+class FolderCreateView(ApiErrorsMixin, APIView):
     class OutputSerializer(serializers.ModelSerializer):
         class Meta:
             model = Folder
             fields = ["uid"]
 
     def post(self, request):
-        folder = create_folder()
+        folder = create_folder(user=request.user)
         data = self.OutputSerializer(instance=folder).data
         return Response(data, status=status.HTTP_201_CREATED)
 
