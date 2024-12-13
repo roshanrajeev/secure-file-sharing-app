@@ -34,7 +34,6 @@ const MySharedLinks = () => {
                 });
                 if (response.ok) {
                     const data = await response.json();
-                    console.log(data);
                     setLinks(data);
                 }
             } catch (error) {
