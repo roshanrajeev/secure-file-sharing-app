@@ -11,6 +11,7 @@ from .services import create_file, create_folder, bulk_create_files
 from django.http import Http404
 from django.core.files.storage import default_storage
 from django.http import FileResponse
+from accounts.models import Account
 
 # Create your views here.
 class FileUploadView(ApiErrorsMixin, ApiAuthMixin, APIView):
@@ -99,3 +100,24 @@ class FolderDownloadView(ApiErrorsMixin, ApiAuthMixin, APIView):
             return response
 
         raise Http404("No files found in the folder.")
+
+
+class FolderSharedWithMeView(ApiErrorsMixin, ApiAuthMixin, APIView):
+    class OutputSerializer(serializers.ModelSerializer):
+        class AccountSerializer(serializers.ModelSerializer):
+            class Meta:
+                model = Account
+                fields = ["id", "first_name", "last_name", "email"]
+
+        user = AccountSerializer(read_only=True, allow_null=True)
+
+        class Meta:
+            model = Folder
+            fields = ["uid", "created_at", "user"]
+
+
+    def get(self, request):
+        folders = request.user.folders_shared_with_me.all()
+        data = self.OutputSerializer(instance=folders, many=True).data
+        return Response(data, status=status.HTTP_200_OK)
+
