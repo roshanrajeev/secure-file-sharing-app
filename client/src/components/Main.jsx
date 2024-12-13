@@ -5,6 +5,7 @@ import Layout from "./Layout"
 import ShareFiles from "./ShareFiles"
 import Login from "./Login"
 import DownloadFiles from './DownloadFiles';
+import MyLinks from './MyLinks';
 
 const Main = () => {
     return (
@@ -13,6 +14,7 @@ const Main = () => {
                 <Route path="/login" element={<Login />} />
                 <Route path="/" element={<ShareFiles />} />
                 <Route path="/shared/:folder_uid" element={<DownloadFiles />} />
+                <Route path="/my-links" element={<MyLinks />} />
             </Route>
         </Routes>
     )

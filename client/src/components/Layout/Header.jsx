@@ -1,10 +1,14 @@
 import React, { useState } from 'react';
 import { Layout, Menu, Dropdown } from 'antd';
-import { ShareAltOutlined, LoginOutlined, LogoutOutlined, UserOutlined } from '@ant-design/icons';
+import { ShareAltOutlined, LoginOutlined, LogoutOutlined, UserOutlined, LinkOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router'; 
 import { useAuth } from '../../hooks/useAuth';
 
 const SHARE_FILES = 'share_files';
+const MY_LINKS = 'my_links';
+const LOGIN = 'login';
+const LOGOUT = 'logout';
+const USER = 'user';
 
 const getMenuItems = (isAuthenticated, userEmail) => {
     const baseItems = [
@@ -17,18 +21,23 @@ const getMenuItems = (isAuthenticated, userEmail) => {
 
     if (!isAuthenticated) {
         baseItems.push({
-            key: 'login',
+            key: LOGIN,
             icon: <LoginOutlined />,
             label: 'Login',
         });
     } else {
         baseItems.push({
-            key: 'user',
+            key: MY_LINKS,
+            icon: <LinkOutlined />,
+            label: 'My Links',
+        });
+        baseItems.push({
+            key: USER,
             icon: <UserOutlined />,
             label: userEmail,
             children: [
                 {
-                    key: 'logout',
+                    key: LOGOUT,
                     icon: <LogoutOutlined />,
                     label: 'Logout',
                 }
@@ -48,15 +57,18 @@ const Header = () => {
     const handleMenuClick = (event) => {
         setCurrent(event.key);
         switch (event.key) {
-            case 'login':
+            case LOGIN:
                 navigate('/login');
                 break;
-            case 'logout':
+            case LOGOUT:
                 logoutUser();
                 navigate('/');
                 break;
+            case MY_LINKS:
+                navigate('/my-links');
+                break;
             default:
-                navigate('');
+                navigate('/');
                 break;
         }
     }

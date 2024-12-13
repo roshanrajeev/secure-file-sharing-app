@@ -1,5 +1,5 @@
 from django.urls.conf import include, path
-from .views import AccountCreateView, AccountListView, CookieTokenObtainPairView, MyAccountView
+from .views import AccountCreateView, AccountListView, CookieTokenObtainPairView, MyAccountView, LogoutView
 from rest_framework_simplejwt.views import TokenRefreshView
 
 urlpatterns = [
