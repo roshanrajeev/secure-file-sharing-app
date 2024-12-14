@@ -7,9 +7,8 @@ services:
       - "8000:8000"
     volumes:
       - ./server:/server
-    environment:
-      - DEBUG=1
-      - DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1
+    env_file:
+      - ./server/.env
     depends_on:
       - db
 
@@ -22,8 +21,8 @@ services:
     volumes:
       - ./client:/client
       - /app/node_modules
-    environment:
-      - REACT_APP_API_URL=http://localhost:8000
+    env_file:
+      - ./client/.env
     depends_on:
       - api
 
@@ -32,9 +31,9 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     environment:
-      - POSTGRES_DB=mydatabase
-      - POSTGRES_USER=myuser
-      - POSTGRES_PASSWORD=mypassword
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
 
 volumes:
   postgres_data:
