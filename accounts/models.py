@@ -40,7 +40,6 @@ class Account(AbstractBaseUser, PermissionsMixin):
     def generate_otp(self):
         self.otp_code = ''.join(random.choices(string.digits, k=6))
         self.otp_created_at = timezone.now()
-        self.otp_used = False
         self.save()
         return self.otp_code
 
