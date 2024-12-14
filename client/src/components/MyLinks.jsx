@@ -84,6 +84,11 @@ const MyLinks = () => {
             ),
         },
         {
+            title: 'Expiry',
+            key: 'expiry',
+            render: (record) => record.is_expired ? 'Expired' : `Expires in ${moment(record.folder_expiry).fromNow()}`,
+        },
+        {
             title: 'Actions',
             key: 'action',
             align: 'center',

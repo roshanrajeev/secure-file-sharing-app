@@ -21,7 +21,10 @@ const DownloadFiles = () => {
                 const { data } = await filesList(params.folder_uid);
                 setFileList(data);
             } catch (error) {
-                if (error.response.status === 403) {
+                if(error.response.status === 410) {
+                    message.error("This link has expired.");
+                    navigate(routes.HOME_PATH)
+                } else if (error.response.status === 403) {
                     if(isAuthenticated) {
                         message.error("You are not authorized to access.");
                         navigate(routes.HOME_PATH)

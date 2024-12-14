@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework import serializers
 from rest_framework import status
 from api.errors import ApiErrorsMixin
-from api.mixins import ApiAuthMixin
+from api.mixins import ApiAuthMixin, ApiAnonymousMixin
 from .models import Folder, File
 from rest_framework.parsers import FormParser, MultiPartParser
 from .services import create_file, create_folder, bulk_create_files
@@ -16,7 +16,7 @@ import zipfile
 from io import BytesIO
 
 # Create your views here.
-class FileUploadView(ApiErrorsMixin, ApiAuthMixin, APIView):
+class FileUploadView(ApiErrorsMixin, ApiAnonymousMixin, APIView):
     parser_classes = [FormParser, MultiPartParser]
 
     class InputSerializer(serializers.Serializer):
@@ -29,7 +29,7 @@ class FileUploadView(ApiErrorsMixin, ApiAuthMixin, APIView):
         return Response(status=status.HTTP_200_OK)
 
 
-class BulkFileUploadView(ApiErrorsMixin, APIView):
+class BulkFileUploadView(ApiErrorsMixin, ApiAnonymousMixin, APIView):
     parser_classes = [FormParser, MultiPartParser]
 
     class InputSerializer(serializers.Serializer):
@@ -42,7 +42,7 @@ class BulkFileUploadView(ApiErrorsMixin, APIView):
         return Response(status=status.HTTP_200_OK)
 
 
-class FolderCreateView(ApiErrorsMixin, APIView):
+class FolderCreateView(ApiErrorsMixin, ApiAnonymousMixin, APIView):
     class InputSerializer(serializers.Serializer):
         share_with_all = serializers.BooleanField(required=False)
         allowed_emails = serializers.ListField(child=serializers.EmailField(), required=False)
@@ -60,7 +60,7 @@ class FolderCreateView(ApiErrorsMixin, APIView):
         return Response(data, status=status.HTTP_201_CREATED)
 
 
-class FileListView(ApiErrorsMixin, APIView):
+class FileListView(ApiErrorsMixin, ApiAnonymousMixin, APIView):
     class OutputSerializer(serializers.ModelSerializer):
         class Meta:
             model = File
@@ -68,6 +68,10 @@ class FileListView(ApiErrorsMixin, APIView):
 
     def get(self, request, folder_uid):
         folder = Folder.objects.get(uid=folder_uid)
+
+        if folder.is_expired():
+            return Response(status=status.HTTP_410_GONE)
+
         if not folder.share_with_all and request.user not in folder.shared_with.all() and request.user != folder.user:
             return Response(status=status.HTTP_403_FORBIDDEN)
 
@@ -76,9 +80,12 @@ class FileListView(ApiErrorsMixin, APIView):
         return Response(data, status=status.HTTP_200_OK)
 
 
-class FolderDownloadView(ApiErrorsMixin, APIView):
+class FolderDownloadView(ApiErrorsMixin, ApiAnonymousMixin, APIView):
     def get(self, request, folder_uid):
         folder = Folder.objects.get(uid=folder_uid)
+        if folder.is_expired():
+            return Response(status=status.HTTP_410_GONE)
+
         if not folder.share_with_all and request.user not in folder.shared_with.all() and request.user != folder.user:
             return Response(status=status.HTTP_403_FORBIDDEN)
 
@@ -117,7 +124,7 @@ class FolderSharedWithMeView(ApiErrorsMixin, ApiAuthMixin, APIView):
 
         class Meta:
             model = Folder
-            fields = ["uid", "created_at", "user"]
+            fields = ["uid", "created_at", "user", "folder_expiry", "is_expired"]
 
 
     def get(self, request):
@@ -137,7 +144,7 @@ class MySharedFoldersView(ApiErrorsMixin, ApiAuthMixin, APIView):
 
         class Meta:
             model = Folder
-            fields = ["uid", "created_at", "shared_with", "share_with_all"]
+            fields = ["uid", "created_at", "shared_with", "share_with_all", "folder_expiry", "is_expired"]
 
     def get(self, request):
         folders = request.user.folders.all()

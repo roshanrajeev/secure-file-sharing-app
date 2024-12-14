@@ -138,9 +138,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 REST_FRAMEWORK = {
     'EXCEPTION_HANDLER': 'api.errors.exception_errors_format_handler',
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'accounts.authentication.CookieJWTAuthentication',
-    ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.AllowAny',
     ],

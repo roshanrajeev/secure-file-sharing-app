@@ -1,6 +1,14 @@
 from django.db import models
 import uuid
 from accounts.models import Account
+import random
+import string
+from django.utils import timezone
+from datetime import timedelta
+from .managers import FolderManager
+
+def default_folder_expiry():
+    return timezone.now() + timedelta(minutes=1)
 
 
 class Folder(models.Model):
@@ -12,6 +20,12 @@ class Folder(models.Model):
     shared_with = models.ManyToManyField(
         Account, related_name="folders_shared_with_me", blank=True
     )
+    folder_expiry = models.DateTimeField(null=True, blank=True, default=default_folder_expiry)
+
+    objects = FolderManager()
+
+    def is_expired(self):
+        return self.folder_expiry and self.folder_expiry < timezone.now()
 
 
 class File(models.Model):

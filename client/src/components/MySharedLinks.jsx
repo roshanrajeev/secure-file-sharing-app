@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Card, Col, Row, Typography, Popover, Avatar, Tag } from 'antd';
 import moment from 'moment';
-import { DownloadOutlined, LinkOutlined, InfoCircleOutlined, UserOutlined, GlobalOutlined } from '@ant-design/icons';
+import { DownloadOutlined, LinkOutlined, InfoCircleOutlined, UserOutlined, GlobalOutlined, ClockCircleOutlined } from '@ant-design/icons';
 import { useAuth } from '../hooks/useAuth';
 import SharedLinkDetailsModal from './Modals/SharedLinkDetailsModal';
 
@@ -76,6 +76,25 @@ const MySharedLinks = () => {
         return shuffled.slice(0, numUsers);
     };
 
+    const renderExpiryInfo = (link) => {
+        console.log({link})
+        if (!link.folder_expiry) {
+            return <Tag icon={<ClockCircleOutlined />} color="green">No expiry date</Tag>;
+        }
+
+        const expiryMoment = moment(link.folder_expiry);
+        const isExpired = moment().isAfter(expiryMoment);
+
+        return (
+            <Tag 
+                icon={<ClockCircleOutlined />} 
+                color={isExpired ? 'red' : 'orange'}
+            >
+                {isExpired ? 'Expired' : `Expires ${expiryMoment.fromNow()}`}
+            </Tag>
+        );
+    };
+
     const renderSharedWith = (link) => {
         if (link.share_with_all) {
             return (
@@ -119,46 +138,80 @@ const MySharedLinks = () => {
         );
     };
 
+    const sortAndFilterLinks = (links) => {
+        return [...links].sort((a, b) => {
+            // First sort by expiry status
+            const aExpired = a.folder_expiry && moment().isAfter(moment(a.folder_expiry));
+            const bExpired = b.folder_expiry && moment().isAfter(moment(b.folder_expiry));
+            
+            if (aExpired !== bExpired) {
+                return aExpired ? 1 : -1; // Expired links go to the end
+            }
+            
+            // Then sort by created_at (newest first)
+            return moment(b.created_at).valueOf() - moment(a.created_at).valueOf();
+        });
+    };
+
+    const renderCard = (link) => {
+        const isExpired = link.folder_expiry && moment().isAfter(moment(link.folder_expiry));
+        
+        return (
+            <Col xs={24} sm={12} md={8} lg={6} key={link.id}>
+                <Card
+                    loading={loading}
+                    actions={[
+                        <Button 
+                            type="text" 
+                            icon={<DownloadOutlined />} 
+                            onClick={() => handleDownload(link)}
+                            disabled={isExpired}
+                        />,
+                        <Button
+                            type="text"
+                            icon={<LinkOutlined />}
+                            onClick={() => window.open(`http://localhost:3000/shared/${link?.uid}`, '_blank')}
+                            disabled={isExpired}
+                        />,
+                        <Button
+                            type="text"
+                            icon={<InfoCircleOutlined />}
+                            onClick={() => showDetails(link)}
+                        />
+                    ]}
+                    style={{
+                        opacity: isExpired ? 0.6 : 1,
+                        filter: isExpired ? 'grayscale(50%)' : 'none'
+                    }}
+                >
+                    <Card.Meta
+                        title={
+                            <Text style={{ color: isExpired ? '#999' : 'inherit' }}>
+                                {link.file_name}
+                            </Text>
+                        }
+                        description={
+                            <>
+                                {renderSharedWith(link)}
+                                <div className="mb-2">
+                                    {renderExpiryInfo(link)}
+                                </div>
+                                <Text type="secondary">
+                                    Created {moment(link.created_at).fromNow()}
+                                </Text>
+                            </>
+                        }
+                    />
+                </Card>
+            </Col>
+        );
+    };
+
     return (
         <div className="mb-12">
             <Title level={2}>My Shared Links</Title>
             <Row gutter={[16, 16]}>
-                {links.map(link => (
-                    <Col xs={24} sm={12} md={8} lg={6} key={link.id}>
-                        <Card
-                            loading={loading}
-                            actions={[
-                                <Button 
-                                    type="text" 
-                                    icon={<DownloadOutlined />} 
-                                    onClick={() => handleDownload(link)}
-                                />,
-                                <Button
-                                    type="text"
-                                    icon={<LinkOutlined />}
-                                    onClick={() => window.open(`http://localhost:3000/shared/${link?.uid}`, '_blank')}
-                                />,
-                                <Button
-                                    type="text"
-                                    icon={<InfoCircleOutlined />}
-                                    onClick={() => showDetails(link)}
-                                />
-                            ]}
-                        >
-                            <Card.Meta
-                                title={link.file_name}
-                                description={
-                                    <>
-                                        {renderSharedWith(link)}
-                                        <Text type="secondary">
-                                            {moment(link.created_at).fromNow()}
-                                        </Text>
-                                    </>
-                                }
-                            />
-                        </Card>
-                    </Col>
-                ))}
+                {sortAndFilterLinks(links).map(link => renderCard(link))}
             </Row>
 
             <SharedLinkDetailsModal 

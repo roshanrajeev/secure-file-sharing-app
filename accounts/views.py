@@ -79,8 +79,6 @@ class CookieTokenObtainPairView(TokenObtainPairView):
         return response
 
 
-
-
 class CookieTokenRefreshView(TokenRefreshView):
     class CookieTokenRefreshSerializer(TokenRefreshSerializer):
         refresh = None
