@@ -92,9 +92,14 @@ class FolderDownloadView(ApiErrorsMixin, ApiAnonymousMixin, APIView):
         files = folder.files.all()
 
         if len(files) == 1:
-            file_obj = files[0].file
-            file_path = default_storage.path(file_obj.name)
-            response = FileResponse(open(file_path, "rb"), as_attachment=True, filename=file_obj.name.split("/")[-1])   
+            file_obj = files[0]
+            decrypted_data = file_obj.get_decrypted_file()
+            buffer = BytesIO(decrypted_data)
+            response = FileResponse(
+                buffer,
+                as_attachment=True,
+                filename=file_obj.name
+            )
             response["Access-Control-Expose-Headers"] = "Content-Disposition"
             return response
         
@@ -102,11 +107,15 @@ class FolderDownloadView(ApiErrorsMixin, ApiAnonymousMixin, APIView):
             zip_buffer = BytesIO()
             with zipfile.ZipFile(zip_buffer, "w") as zip_file:
                 for file_obj in files:
-                    file_path = default_storage.path(file_obj.file.name)
-                    zip_file.write(file_path, arcname=file_obj.file.name.split("/")[-1])
+                    decrypted_data = file_obj.get_decrypted_file()
+                    zip_file.writestr(file_obj.name, decrypted_data)
+            
             zip_buffer.seek(0)
-
-            response = FileResponse(zip_buffer, as_attachment=True, filename=f"{folder_uid}_files.zip")
+            response = FileResponse(
+                zip_buffer, 
+                as_attachment=True, 
+                filename=f"{folder_uid}_files.zip"
+            )
             response["Access-Control-Expose-Headers"] = "Content-Disposition"
             return response
 
@@ -123,6 +132,7 @@ class FolderSharedWithMeView(ApiErrorsMixin, ApiAuthMixin, APIView):
         user = AccountSerializer(read_only=True, allow_null=True)
 
         class Meta:
+            
             model = Folder
             fields = ["uid", "created_at", "user", "folder_expiry", "is_expired"]
 
@@ -150,4 +160,3 @@ class MySharedFoldersView(ApiErrorsMixin, ApiAuthMixin, APIView):
         folders = request.user.folders.all()
         data = self.OutputSerializer(instance=folders, many=True).data
         return Response(data, status=status.HTTP_200_OK)
-

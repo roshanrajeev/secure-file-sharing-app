@@ -1,5 +1,6 @@
 from .models import Folder, File
 from accounts.models import Account
+import uuid
 
 def create_file(*, file: str, folder_uid: str):
     folder = Folder.objects.get(uid=folder_uid)
@@ -14,4 +15,10 @@ def create_folder(*, user: Account, share_with_all: bool, allowed_emails: list[s
 
 def bulk_create_files(*, files: list[str], folder_uid: str):
     folder = Folder.objects.get(uid=folder_uid)
-    return File.objects.bulk_create([File(file=file, folder=folder, name=file.name) for file in files])
+    for file_obj in files:
+        original_name = file_obj.name
+        updated_name = f"{uuid.uuid4()}_{original_name}"
+        file_obj.name = updated_name
+        file = File(file=file_obj, folder=folder, name=original_name)
+        file.save()
+    return files
