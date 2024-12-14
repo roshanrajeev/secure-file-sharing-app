@@ -12,6 +12,14 @@ export const axiosInstance = axios.create({
     },
 });
 
+export const axiosBaseInstance = axios.create({
+    baseURL: API_BASE_URL,
+    withCredentials: true,
+    headers: {
+        'Content-Type': 'application/json',
+    },
+});
+
 axiosInstance.interceptors.response.use(
     response => response, 
     async error => {

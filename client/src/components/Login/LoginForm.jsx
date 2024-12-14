@@ -1,12 +1,14 @@
-import React from 'react';
-import { Button, Form, Input, Space } from 'antd';
+import React, { useState } from 'react';
+import { Button, Form, Input, Space, Typography } from 'antd';
 import { useLogin } from '../../hooks/useLogin';
 
 const LoginForm = ({ toggleForm }) => {
     const [form] = Form.useForm();
-    const login = useLogin({ form });
+    const { login, isWaitingForOTP } = useLogin({ form });
+    const [email, setEmail] = useState('');
 
     const onFinish = async (values) => {
+        setEmail(values.email);
         await login(values);
     }
 
@@ -33,10 +35,24 @@ const LoginForm = ({ toggleForm }) => {
                     onChange={handleFieldChange}
                 />
             </Form.Item>
+            {isWaitingForOTP && (
+                <>
+                    <Typography.Text type="secondary">
+                        A verification code has been sent to {email}
+                    </Typography.Text>
+                    <Form.Item label="Verification Code" name="otp">
+                        <Input 
+                            placeholder="Enter verification code" 
+                            name="otp" 
+                            onChange={handleFieldChange}
+                        />
+                    </Form.Item>
+                </>
+            )}
             <Form.Item>
                 <Space direction="vertical" className="w-full">
                     <Button type="primary" htmlType="submit" className="w-full">
-                        Login
+                        {isWaitingForOTP ? 'Verify' : 'Login'}
                     </Button>
                     <Button type="link" onClick={toggleForm} className="w-full">
                         Not registered? Create an account
