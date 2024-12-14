@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Card, Col, Row, Typography, Popover, Avatar, Tag } from 'antd';
+import { Button, Card, Col, Row, Typography, Popover, Avatar, Tag, Empty } from 'antd';
 import moment from 'moment';
 import { DownloadOutlined, LinkOutlined, InfoCircleOutlined, UserOutlined, GlobalOutlined, ClockCircleOutlined } from '@ant-design/icons';
 import { useAuth } from '../hooks/useAuth';
@@ -209,10 +209,29 @@ const MySharedLinks = () => {
 
     return (
         <div className="mb-12">
-            <Title level={2}>My Shared Links</Title>
-            <Row gutter={[16, 16]}>
-                {sortAndFilterLinks(links).map(link => renderCard(link))}
-            </Row>
+            <Title level={2}>Shared Files</Title>
+            {loading ? (
+                <Row gutter={[16, 16]}>
+                    {[1, 2, 3, 4].map(i => (
+                        <Col xs={24} sm={12} md={8} lg={6} key={i}>
+                            <Card loading={true} />
+                        </Col>
+                    ))}
+                </Row>
+            ) : links.length === 0 ? (
+                <Empty
+                    description={
+                        <span>
+                            You haven't shared any files yet. Share some files to see them here!
+                        </span>
+                    }
+                    image={Empty.PRESENTED_IMAGE_SIMPLE}
+                />
+            ) : (
+                <Row gutter={[16, 16]}>
+                    {sortAndFilterLinks(links).map(link => renderCard(link))}
+                </Row>
+            )}
 
             <SharedLinkDetailsModal 
                 isVisible={isModalVisible}

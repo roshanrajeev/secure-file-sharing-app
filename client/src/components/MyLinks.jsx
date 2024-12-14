@@ -55,7 +55,7 @@ const MyLinks = () => {
 
     const columns = [
         {
-            title: 'Shared By',
+            title: 'Owner',
             key: 'shared_by',
             render: (record) => (
                 <Popover 
@@ -69,13 +69,13 @@ const MyLinks = () => {
             ),
         },
         {
-            title: 'Time',
+            title: 'Date Shared',
             dataIndex: 'created_at',
             key: 'created_at',
             render: (text) => moment(text).fromNow(),
         },
         {
-            title: 'Shareable Link',
+            title: 'Access Link',
             key: 'share_link',
             render: (record) => (
                 <a href={`http://localhost:3000/shared/${record?.uid}`} target="_blank" rel="noopener noreferrer">
@@ -84,12 +84,12 @@ const MyLinks = () => {
             ),
         },
         {
-            title: 'Expiry',
+            title: 'Expiration Date',
             key: 'expiry',
             render: (record) => record.is_expired ? 'Expired' : `Expires in ${moment(record.folder_expiry).fromNow()}`,
         },
         {
-            title: 'Actions',
+            title: 'Download',
             key: 'action',
             align: 'center',
             render: (record) => (
@@ -106,7 +106,7 @@ const MyLinks = () => {
     return (
         <div style={{ padding: '24px' }}>
             <MySharedLinks/>
-            <Title level={2}>Shared with me</Title>
+            <Title level={2}>Received Files</Title>
             <Table
                 columns={columns}
                 dataSource={links}

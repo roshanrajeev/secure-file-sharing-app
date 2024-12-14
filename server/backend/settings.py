@@ -176,3 +176,5 @@ ENCRYPTION_KEY_PATH = BASE_DIR / 'keys' / 'encryption.key'
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
 ]
+
+DEFAULT_OTP = '123456'
