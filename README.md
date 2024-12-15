@@ -47,6 +47,10 @@ docker compose up -d --build
 docker compose exec api python manage.py migrate
 ```
 
+## Note
+
+In development mode, use "123456" as the verification code for logging in.
+
 ## Access Points
 
 - Frontend: http://localhost:3000
